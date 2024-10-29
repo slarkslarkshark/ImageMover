@@ -7,7 +7,7 @@ import pickle
 
 
 class ImageMoverData:
-    def __init__(self, history, main_path, path2, path3, path_ind_next, step, img_names, all_names):
+    def __init__(self, history, main_path, path2, path3, path_ind_next, step, img_names):
         self.history = history
         self.main_path = main_path
         self.path2 = path2
@@ -15,7 +15,6 @@ class ImageMoverData:
         self.path_ind_next = path_ind_next
         self.step = step
         self.img_names = img_names
-        self.all_names = all_names
 
 class ImageMover:
     def __init__(self, root, _main_path="", _path2="", _path3=""):
@@ -75,7 +74,6 @@ class ImageMover:
                 self.path_ind_next = Data.path_ind_next
                 self.step = Data.step
                 self.img_names = Data.img_names
-                self.all_names = Data.all_names
             messagebox.showinfo("Успех", "Данные успешно загружены!")
             self.start("load")
         except Exception as exc:
@@ -88,7 +86,7 @@ class ImageMover:
             file_path = filedialog.asksaveasfilename(defaultextension=".pkl",
                                                     filetypes=[("Pickle files", "*.pkl"), ("All files", "*.*")])
             Data = ImageMoverData(self.history, self.main_path, self.path2, self.path3,
-                                  self.path_ind_next, self.step, self.img_names, self.all_names)
+                                  self.path_ind_next, self.step, self.img_names)
             with open(file_path, 'wb') as f:
                 pickle.dump(Data, f)
             messagebox.showinfo("Успех", "Данные успешно сохранены!")
@@ -128,8 +126,7 @@ class ImageMover:
                 self.__init__(self.root)
                 return
 
-            self.all_names = set(map(lambda x: x.name, self.main_path.glob("*.jpg")))
-            self.img_names = [name for name in self.all_names if "_buf" not in name]
+            self.img_names = list(map(lambda x: x.name, self.main_path.glob("*.jpg")))
         
         self.images_frame.pack(side=TOP)
         self.buttons_frame.pack(side=BOTTOM)
@@ -249,7 +246,7 @@ class ImageMover:
                 self.image_labels[index].config(image=self.images_with_frame[index])
 
     def get_n(self, path):
-        names = [name.stem for name in path.glob("*.jpg") if "_buf" not in str(name)]
+        names = [name.stem for name in path.glob("*.jpg")]
         if len(names) == 0:
             return 1
         names = list(map(lambda x: int(x), names))
@@ -284,14 +281,6 @@ class ImageMover:
         shutil.move(full_name, new_full_name)
         self.history[self.step][full_name] = new_full_name
         print(f"Перемещено: {full_name} -> {new_full_name}")
-
-        image_name_buf = image_name.split(".")[0] + "_buf.jpg"
-        if image_name_buf in self.all_names:
-            full_name = self.main_path / image_name_buf
-            new_full_name = target_folder / f"{n}_buf.jpg"
-            shutil.move(full_name, new_full_name)
-            self.history[self.step][full_name] = new_full_name
-            print(f"Перемещено: {full_name} -> {new_full_name}")
 
 if __name__ == "__main__":
     root = Tk()
