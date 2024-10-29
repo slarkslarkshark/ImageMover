@@ -132,13 +132,15 @@ class ImageMover:
         self.buttons_frame.pack(side=BOTTOM)
         self.save_frame.pack(side=RIGHT)
 
-        self.move_button2 = Button(self.buttons_frame, text=Path(self.path2).name, font=("Arial", 10, "bold"), command=self.move_image_to_folder2)
+        self.move_button2 = Button(self.buttons_frame, text=Path(self.path2).name, font=("Arial", 10, "bold"),
+                                   command=lambda folder_index=2: self.move_image_to_folder(folder_index))
         self.move_button2.pack(side=LEFT)
 
         self.next_button = Button(self.buttons_frame, text="Далее", font=("Arial", 10, "bold"), command=self.next)
         self.next_button.pack(side=LEFT)
 
-        self.move_button3 = Button(self.buttons_frame, text=Path(self.path3).name, font=("Arial", 10, "bold"), command=self.move_image_to_folder3)
+        self.move_button3 = Button(self.buttons_frame, text=Path(self.path3).name, font=("Arial", 10, "bold"),
+                                   command=lambda folder_index=3: self.move_image_to_folder(folder_index))
         self.move_button3.pack(side=LEFT)
 
         self.cancel_button = Button(self.buttons_frame, text="Отмена", font=("Arial", 10, "bold"), command=self.cancel)
@@ -171,9 +173,15 @@ class ImageMover:
                 self.step -= 1
                 self.path_ind_next -= 15
 
-            for path in self.history[self.step]:
-                shutil.move(self.history[self.step][path], path)
-                print(f"Отмена: {self.history[self.step][path]} -> {path}")
+            for file_path in self.history[self.step]:
+                path = self.history[self.step][file_path].parent
+                if path == self.history[self.step][file_path]:
+                    self.n2 -= 1
+                elif path == self.path3:
+                    self.n3 -= 1
+
+                shutil.move(self.history[self.step][file_path], file_path)
+                print(f"Отмена: {self.history[self.step][file_path]} -> {file_path}")
             del self.history[self.step]
 
             if self.end:
@@ -252,20 +260,20 @@ class ImageMover:
         names = list(map(lambda x: int(x), names))
         return sorted(names)[-1] + 1
 
-    def move_image_to_folder2(self):
+    def move_image_to_folder(self, folder_index):
         if self.selected_index:  
             for index in self.selected_index:
-                self.move_image(self.path2, index, self.n2)
-                self.n2 += 1
-                self.image_labels[index].config(image=self.default_img)
-                self.images[index] = self.default_img
-                self.selected_index = []
 
-    def move_image_to_folder3(self):
-        if self.selected_index:
-            for index in self.selected_index:
-                self.move_image(self.path3, index, self.n3)
-                self.n3 += 1
+                if folder_index == 2:
+                    n = self.n2
+                    folder_path = self.path2
+                    self.n2 += 1
+                else:
+                    n = self.n3
+                    folder_path = self.path3
+                    self.n3 += 1
+
+                self.move_image(folder_path, index, n)
                 self.image_labels[index].config(image=self.default_img)
                 self.images[index] = self.default_img
                 self.selected_index = []
