@@ -166,23 +166,12 @@ class ImageMover:
         self.load_next_imgs()
 
     def next(self):
-        if self.step not in self.history.keys():
-            self.history[self.step] = dict()
         self.step += 1
         self.path_ind_next += 15
         self.load_next_imgs()
 
-    def cancel(self):
-        if len(self.history) != 0:
-            if self.step not in self.history.keys():
-                self.step -= 1
-                self.path_ind_next -= 15
-            elif len(self.history[self.step]) == 0:
-                del self.history[self.step]
-                self.step -= 1
-                self.path_ind_next -= 15
-
-            for file_path in self.history[self.step]:
+    def move_imgs_from_history(self):
+        for file_path in self.history[self.step]:
                 path = self.history[self.step][file_path].parent
                 if path == self.history[self.step][file_path]:
                     self.n2 -= 1
@@ -191,16 +180,29 @@ class ImageMover:
 
                 shutil.move(self.history[self.step][file_path], file_path)
                 print(f"Отмена: {self.history[self.step][file_path]} -> {file_path}")
-            del self.history[self.step]
+        del self.history[self.step]
 
-            if self.end:
-                self.end = False
-                self.end_frame.pack_forget()
-                self.imgs_frame.pack(side=TOP)
-                self.buttons_frame.pack(side=BOTTOM)
-                self.save_frame.pack(side=RIGHT)
+    def cancel(self):
 
-            self.load_next_imgs()
+        if self.path_ind_next == 0:
+            return
+        
+        if self.step not in self.history.keys():
+            self.step -= 1
+            self.path_ind_next -= 15
+            if self.step in self.history.keys():
+                self.move_imgs_from_history()
+        else:
+            self.move_imgs_from_history()
+
+        if self.end:
+            self.end = False
+            self.end_frame.pack_forget()
+            self.imgs_frame.pack(side=TOP)
+            self.buttons_frame.pack(side=BOTTOM)
+            self.save_frame.pack(side=RIGHT)
+
+        self.load_next_imgs()
  
     def draw_border(self, img, border_size=7):
         img_b = img.copy()
