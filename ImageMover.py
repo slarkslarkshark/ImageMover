@@ -136,6 +136,8 @@ class ImageMover:
                 return
 
             self.img_names = list(map(lambda x: x.name, self.main_path.glob("*.jpg")))
+            self.img_names += list(map(lambda x: x.name, self.main_path.glob("*.jpeg")))
+            self.img_names += list(map(lambda x: x.name, self.main_path.glob("*.png")))
         
         self.imgs_frame.pack(side=TOP)
         self.buttons_frame.pack(side=BOTTOM)
@@ -268,8 +270,11 @@ class ImageMover:
 
     def get_n(self, path):
         names = [name.stem for name in path.glob("*.jpg")]
+        names += [name.stem for name in path.glob("*.jpeg")]
+        names += [name.stem for name in path.glob("*.png")]
         if len(names) == 0:
             return 1
+        
         names = list(map(lambda x: int(x), names))
         return sorted(names)[-1] + 1
 
